@@ -1,15 +1,16 @@
-action: ??? # train or test
+action: ??? # train or test OR save IN CASE OF "save_feat"
 name: ??? # name of the experiment needed for the logs
-modality: ["RGB"] # modality used
+modality: ["RGB"] # modality used; needs to be specified in the model section as well; also used to store and retrieve extracted
+#features; IT ALSO HAS TO BE SET UNDER "DATASET" SO IT CAN SAVE/LOAD FEATURES OR INITIAL ACTUAL DATASET
 total_batch: 128 # total batch size if training is done with gradient accumulation
 batch_size: 32 # batch size for the forward
 gpus: null # gpus adopted
 wandb_name: null # needed for wandb logging
-resume_from: null # checkpoint directory
+resume_from: null # checkpoint directory | NEEDS TO BE SET FOR TRAINING/VALIDATION BUT ALSO FOR SAVING CHECKPOINTS
 logname: null # name of the logs
 models_dir: null # directory containing all the models
 
-train:
+train: #THE SPECIFIC VALUES OF THE LEARNING IS IN THE MODELS SECTION!!!
   num_iter: 5000 # number of training iterations with total_batch size
   lr_steps: 3000 # steps before reducing learning rate
   eval_freq: 50 # evaluation frequency
@@ -28,7 +29,8 @@ test:
 
 dataset:
   annotations_path: train_val # path for the annotations data
-  shift: ??? # shifts of the dataset
+  shift: ??? # shifts of the dataset ; is "split" in EPICKitchenDataloader and is [D1,D2,D3]; when train + val [train_split - val_split]
+  #for validation the test split will be used; THIS IS USED ALSO FOR SAVING THE FEATURES!!
   workers: 4 # number of workers for the dataloader
   stride: 2 # stride in case of dense sampling
   resolution: 224 # input resolution to the model
@@ -42,7 +44,7 @@ dataset:
 # these are the action recognition models for each modality
 models:
   RGB:
-    model: Classifier
+    model: Classifier # Name of the ACTUAL class used in training/testing or saving checkpoints. It needs to be imported in __init__.py
     normalize: False
     kwargs: {}
     lr_steps: 3000

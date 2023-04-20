@@ -1,0 +1,13 @@
+STEPS FOR RGB EXTRACTION
+
+implement missing parts in EpicKitchensDataset (utils.loaders)
+need to find the I3D checkpoints (maybe "pretrained_i3d"??) and download them and set the resume_from yaml property
+need to download the epicKitchens subset made available by polito and then set the dataset.RGB.data_path property
+run save_feat.py and hope for the best, heheheh
+yaml: 
+    name = feat_extraction ?
+    resume_from = path to saved I3D checkpoint
+    action = save
+    models.RGB.model = I3D
+    dataset.RGB.data_path = path to the Epic Kitchens videos
+    dataset.shift = TBD 

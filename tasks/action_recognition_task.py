@@ -8,7 +8,7 @@ from utils.logger import logger
 
 from typing import Dict, Tuple
 
-
+#serves as a wrapper to all the models and is used for training and testing
 class ActionRecognition(tasks.Task, ABC):
     """Action recognition model."""
     

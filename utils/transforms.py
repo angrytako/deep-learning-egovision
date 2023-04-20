@@ -315,8 +315,10 @@ if __name__ == "__main__":
         Stack(),
         ToTorchFormatTensor(),
         GroupNormalize(
+            normalize = None,
             mean=[.485, .456, .406],
-            std=[.229, .224, .225]
+            std=[.229, .224, .225],
+            rng=None
         )]
     )
 

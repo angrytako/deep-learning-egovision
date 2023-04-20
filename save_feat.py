@@ -44,6 +44,7 @@ def main():
     train_augmentations = {}
     test_augmentations = {}
     logger.info("Instantiating models per modality")
+    #part for data augmentation; needs to be specified in the implementation of the actual model class!
     for m in modalities:
         logger.info('{} Net\tModality: {}'.format(args.models[m].model, m))
         models[m] = getattr(model_list, args.models[m].model)(num_classes, m, args.models[m], **args.models[m].kwargs)
