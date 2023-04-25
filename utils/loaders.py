@@ -7,6 +7,7 @@ from PIL import Image
 import os
 import os.path
 from utils.logger import logger
+import numpy as np
 
 class EpicKitchensDataset(data.Dataset, ABC):
     def __init__(self, split, modalities, mode, dataset_conf, num_frames_per_clip, num_clips, dense_sampling,
@@ -65,7 +66,7 @@ class EpicKitchensDataset(data.Dataset, ABC):
 
             self.model_features = pd.merge(self.model_features, self.list_file, how="inner", on="uid")
 
-    def _get_train_indices(self, record, modality='RGB'):
+    def _get_train_indices(self, record:EpicVideoRecord, modality='RGB'):
         ##################################################################
         # TODO: implement sampling for training mode                     #
         # Give the record and the modality, this function should return  #
@@ -74,9 +75,31 @@ class EpicKitchensDataset(data.Dataset, ABC):
         # Remember that the returned array should have size              #
         #           num_clip x num_frames_per_clip                       #
         ##################################################################
-        raise NotImplementedError("You should implement _get_train_indices")
+        
+        #the list is a list of OFFSETS, as shown by this line idx_untrimmed = record.start_frame + idx
+       
+        # "the returned array should have size num_clip x num_frames_per_clip" -> this depends of what a record is
+        # A record is a loaded file. If a file is a clip, then this is wrong, otherwise if the file is the entire video
+        # then the this is the actual number of frames that need to be sampled. I will assume the second option since 
+        # they write it like this. Also is a one dimensional array, judging by how it's used
+        is_dense_sampling = self.dense_sampling[modality]
+        num_samples = self.num_frames_per_clip * self.num_clips
+        num_frames = record.num_frames[modality]
+        self._get_dense_sample_(num_frames, num_samples) if is_dense_sampling else self._get_uniform_sample_(self, num_frames, num_samples)
+        
+    #this implementation sistematically leaves out the last frames, but it should not be a problem    
+    #TODO this is the wrong implementation
+    def _get_uniform_sample_(self, num_frames, num_samples):
+        pass
+        #step = num_frames // num_samples
+        #return np.arange(0, num_frames, step)
+    
+    #TODO stil to be implemented, but it is unclear how dense sampling works
+    def _get_dense_sample_(self, num_frames, num_samples, stride=2):
+        raise NotImplementedError("You should implement _get_val_indices")
 
-    def _get_val_indices(self, record, modality):
+
+    def _get_val_indices(self, record:EpicVideoRecord, modality):
         ##################################################################
         # TODO: implement sampling for testing mode                      #
         # Give the record and the modality, this function should return  #
