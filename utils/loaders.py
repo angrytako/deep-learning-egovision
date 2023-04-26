@@ -83,19 +83,22 @@ class EpicKitchensDataset(data.Dataset, ABC):
         # then the this is the actual number of frames that need to be sampled. I will assume the second option since 
         # they write it like this. Also is a one dimensional array, judging by how it's used
         is_dense_sampling = self.dense_sampling[modality]
-        num_samples = self.num_frames_per_clip * self.num_clips
-        num_frames = record.num_frames[modality]
-        self._get_dense_sample_(num_frames, num_samples) if is_dense_sampling else self._get_uniform_sample_(self, num_frames, num_samples)
+        num_clips = self.num_clips
+        num_frames_per_clip = self.num_frames_per_clip
+        tot_num_frames = record.num_frames[modality]
+        self._get_dense_sample_(num_clips, num_frames_per_clip, tot_num_frames, stride=2) if is_dense_sampling else self._get_uniform_sample_(num_clips, num_frames_per_clip, tot_num_frames)
         
-    #this implementation sistematically leaves out the last frames, but it should not be a problem    
-    #TODO this is the wrong implementation
-    def _get_uniform_sample_(self, num_frames, num_samples):
-        pass
-        #step = num_frames // num_samples
-        #return np.arange(0, num_frames, step)
+    def _get_uniform_sample_(self, num_clips, num_frames_per_clip, tot_num_frames):
+        intervals = np.int16(np.linspace(0, tot_num_frames, num_clips+1))
+        frames = np.array([], dtype=np.int16)
+        for i, first in enumerate(intervals[0:-1]):
+            last = intervals[i+1]
+            frames = np.hstack([frames,np.int16(np.linspace(first, last-1, num_frames_per_clip))])
+        return frames
     
     #TODO stil to be implemented, but it is unclear how dense sampling works
-    def _get_dense_sample_(self, num_frames, num_samples, stride=2):
+    #TODO implement yaml level stride
+    def _get_dense_sample_(self, num_clips, num_frames_per_clip, tot_num_frames, stride=2):
         raise NotImplementedError("You should implement _get_val_indices")
 
 
