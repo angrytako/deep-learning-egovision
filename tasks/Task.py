@@ -156,7 +156,7 @@ class Task(torch.nn.Module, metaclass=ABCMeta):
             )[0].name
             model_path = os.path.join(str(last_dir), model)
 
-            self.__restore_checkpoint(model_path)
+            self.__restore_checkpoint(m, model_path)
 
     def load_last_model(self, path: str):
         """Load the last model from a specific path.
