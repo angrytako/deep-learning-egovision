@@ -84,9 +84,9 @@ class EpicKitchensDataset(data.Dataset, ABC):
         # they write it like this. Also is a one dimensional array, judging by how it's used
         is_dense_sampling = self.dense_sampling[modality]
         num_clips = self.num_clips
-        num_frames_per_clip = self.num_frames_per_clip
+        num_frames_per_clip = self.num_frames_per_clip[modality]
         tot_num_frames = record.num_frames[modality]
-        self._get_dense_sample_(num_clips, num_frames_per_clip, tot_num_frames, stride=2) if is_dense_sampling else self._get_uniform_sample_(num_clips, num_frames_per_clip, tot_num_frames)
+        return self._get_dense_sample_(num_clips, num_frames_per_clip, tot_num_frames, stride=2) if is_dense_sampling else self._get_uniform_sample_(num_clips, num_frames_per_clip, tot_num_frames)
         
     def _get_uniform_sample_(self, num_clips, num_frames_per_clip, tot_num_frames):
         intervals = np.int16(np.linspace(0, tot_num_frames, num_clips+1))
@@ -111,7 +111,12 @@ class EpicKitchensDataset(data.Dataset, ABC):
         # Remember that the returned array should have size              #
         #           num_clip x num_frames_per_clip                       #
         ##################################################################
-        raise NotImplementedError("You should implement _get_val_indices")
+        is_dense_sampling = self.dense_sampling[modality]
+        num_clips = self.num_clips
+        num_frames_per_clip = self.num_frames_per_clip[modality]
+        tot_num_frames = record.num_frames[modality]
+        return self._get_dense_sample_(num_clips, num_frames_per_clip, tot_num_frames, stride=2) if is_dense_sampling else self._get_uniform_sample_(num_clips, num_frames_per_clip, tot_num_frames)
+        
 
     def __getitem__(self, index):
 
