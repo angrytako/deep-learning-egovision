@@ -1,3 +1,5 @@
+#split=test,train and decides which file of the shift is used for extraction
+#on default.yaml, dense_sampling and num_clips and num_frames_per_clip need to be updated for bouth train and test
 action: save # train or test
 name: saved_feat_I3D
 split: test
