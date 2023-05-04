@@ -8,6 +8,7 @@ import os
 import os.path
 from utils.logger import logger
 import numpy as np
+import random as rd
 
 class EpicKitchensDataset(data.Dataset, ABC):
     def __init__(self, split, modalities, mode, dataset_conf, num_frames_per_clip, num_clips, dense_sampling,
@@ -96,11 +97,16 @@ class EpicKitchensDataset(data.Dataset, ABC):
             frames = np.hstack([frames,np.int16(np.linspace(first, last-1, num_frames_per_clip))])
         return frames
     
-    #TODO stil to be implemented, but it is unclear how dense sampling works
     #TODO implement yaml level stride
     def _get_dense_sample_(self, num_clips, num_frames_per_clip, tot_num_frames, stride=2):
-        raise NotImplementedError("You should implement _get_val_indices")
-
+        
+        frames_per_part = (num_frames_per_clip-1)//2
+        frames = np.array([],dtype=np.int16)
+        video = np.int16(np.linspace(0, tot_num_frames-1, tot_num_frames))
+        centrals = np.random.choice(video[frames_per_part*stride+1:-frames_per_part*stride-1], num_clips,replace= False)
+        for i in centrals:
+            frames = np.append(frames,np.concatenate([video[i-stride*frames_per_part:i:stride],[i],video[i+stride:i+stride+stride*frames_per_part:stride]]))
+        return frames
 
     def _get_val_indices(self, record:EpicVideoRecord, modality):
         ##################################################################
