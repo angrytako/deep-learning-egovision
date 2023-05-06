@@ -58,6 +58,8 @@ class ActionRecognition(tasks.Task, ABC):
                                                 weight_decay=model_args[m].weight_decay,
                                                 momentum=model_args[m].sgd_momentum)
 
+#called in the following way in training (train_classifier.py):
+#logits, _ = action_classifier.forward(data)
     def forward(self, data: Dict[str, torch.Tensor], **kwargs) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         """Forward step of the task
 
