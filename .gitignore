@@ -7,7 +7,8 @@ __pycache__/
 
 # C extensions
 *.so
-
+*.mp4
+*.jpg
 # Distribution / packaging
 .Python
 env/
@@ -186,3 +187,5 @@ fabric.properties
 # .idea
 
 utils/output
+2022-06-14_16-38-43_streamLog_actionNet-wearables_S04.hdf5
+2022-06-14_16-38-43_S04_eye-tracking-video-world_frame.mp4
