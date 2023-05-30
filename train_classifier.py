@@ -46,6 +46,9 @@ def main():
     # recover valid paths, domains, classes
     # this will output the domain conversion (D1 -> 8, et cetera) and the label list
     num_classes, valid_labels, source_domain, target_domain = utils.utils.get_domains_and_labels(args)
+ 
+
+
     # device where everything is run
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -53,17 +56,35 @@ def main():
     models = {}
     logger.info("Instantiating models per modality")
     for m in modalities:
+
         logger.info('{} Net\tModality: {}'.format(args.models[m].model, m))
         # notice that here, the first parameter passed is the input dimension
         # In our case it represents the feature dimensionality which is equivalent to 1024 for I3D
         #TODO I have set the values to fixed lenghts, but ideally they need to be set either with new args
         #or dynamically
-        models[m] = getattr(model_list, args.models[m].model)(1024, 8)
+        
+
+        #NB--> model_list is just 'models' folder
+        # args.model --> access to default.yaml in the model section
+        # example args.model[m]
+        # {'model': 'Classifier', 'normalize': False, 'kwargs': {}, 'lr_steps': 3000, 'lr': 0.01, 'sgd_momentum': 0.9, 'weight_decay': 1e-07}
+        
+        #if args.model[m].model == 'LSTM':
+        #  logger.info('\n----------------')
+        #  logger.info(' UIIIII')
+          #(dim_input, hidden_size, num_layers, num_classes)
+        models[m] = getattr(model_list, args.models[m].model)(1024,128,2,8)
+        #else:
+        #  models[m] = getattr(model_list, args.models[m].model)(1024, 8)
+
+        logger.info('\n ------------ \n')
+        logger.info(models[m])
+        exit()
 
     # the models are wrapped into the ActionRecognition task which manages all the training steps
     action_classifier = tasks.ActionRecognition("action-classifier", models, args.batch_size,
-                                                args.total_batch, args.models_dir, num_classes,
-                                                args.train.num_clips, args.models, args=args)
+                                                  args.total_batch, args.models_dir, num_classes,
+                                                  args.train.num_clips, args.models, args=args)
     action_classifier.load_on_gpu(device)
 
     if args.action == "train":
