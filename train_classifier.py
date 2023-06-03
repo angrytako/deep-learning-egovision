@@ -71,15 +71,14 @@ def main():
         
         #if args.model[m].model == 'LSTM':
         #  logger.info('\n----------------')
-        #  logger.info(' UIIIII')
-          #(dim_input, hidden_size, num_layers, num_classes)
+        #(dim_input, hidden_size, num_layers, num_classes)
         models[m] = getattr(model_list, args.models[m].model)(1024,128,2,8)
         #else:
-        #  models[m] = getattr(model_list, args.models[m].model)(1024, 8)
+        #models[m] = getattr(model_list, args.models[m].model)(1024, 8)
 
         logger.info('\n ------------ \n')
         logger.info(models[m])
-        exit()
+        
 
     # the models are wrapped into the ActionRecognition task which manages all the training steps
     action_classifier = tasks.ActionRecognition("action-classifier", models, args.batch_size,
@@ -154,13 +153,18 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
         """
         start_t = datetime.now()
         # the following code is necessary as we do not reason in epochs so as soon as the dataloader is finished we need
-        # to redefine the iterator
+        # to redefine the iteraton
+
         try:
             source_data, source_label = next(data_loader_source)
         except StopIteration:
             data_loader_source = iter(train_loader)
             source_data, source_label = next(data_loader_source)
         end_t = datetime.now()
+
+        #logger.info('\n---------------DATA---------------\n')
+        #logger.info(source_data['RGB'].shape) #([32, 5, 1024])
+        #logger.info('\n---------------------------------')
 
         logger.info(f"Iteration {i}/{training_iterations} batch retrieved! Elapsed time = "
                     f"{(end_t - start_t).total_seconds() // 60} m {(end_t - start_t).total_seconds() % 60} s")
@@ -169,15 +173,31 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
         source_label = source_label.to(device)
         data = {}
 
-        for clip in range(args.train.num_clips):
-            # in case of multi-clip training one clip per time is processed
-            for m in modalities:
-                data[m] = source_data[m][:, clip].to(device)
+        
+        # for lstm
+        if args.need_clips == True:
+              logger.info('ENTRATO')
+                      
+              for m in modalities:
+                  data[m] = source_data[m].to(device)
 
-            logits, _ = action_classifier.forward(data)
-            action_classifier.compute_loss(logits, source_label, loss_weight=1)
-            action_classifier.backward(retain_graph=False)
-            action_classifier.compute_accuracy(logits, source_label)
+              logits, _ = action_classifier.forward(data)
+              action_classifier.compute_loss(logits, source_label, loss_weight=1)
+              action_classifier.backward(retain_graph=False)
+              action_classifier.compute_accuracy(logits, source_label)
+
+        else:
+
+          logger.info('NON ENTRATO')
+          for clip in range(args.train.num_clips):
+              # in case of multi-clip training one clip per time is processed
+              for m in modalities:
+                  data[m] = source_data[m][:, clip].to(device)
+
+              logits, _ = action_classifier.forward(data)
+              action_classifier.compute_loss(logits, source_label, loss_weight=1)
+              action_classifier.backward(retain_graph=False)
+              action_classifier.compute_accuracy(logits, source_label)
 
         # update weights and zero gradients if total_batch samples are passed
         if gradient_accumulation_step:

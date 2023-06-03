@@ -76,7 +76,19 @@ class ActionRecognition(tasks.Task, ABC):
         logits = {}
         features = {}
         for i_m, m in enumerate(self.modalities):
-            logits[m], feat = self.task_models[m](x=data[m], **kwargs)
+
+            logger.info('\n----------------')
+            logger.info('TASK')
+            logger.info(self.task_models[m])
+            #{'RGB': DataParallel(  (module): LSTM((lstm): LSTM(1024, 128, num_layers=2, batch_first=True),
+            #  (fc): Linear(in_features=128, out_features=8, bias=True)))}
+
+            #(module): Classifier(
+            #(classifier): Linear(in_features=1024, out_features=8, bias=True)
+  
+            # data --> dictionary RGB: dati per rgb           
+           
+            logits[m], feat = self.task_models[m](x=data[m])
             if i_m == 0:
                 for k in feat.keys():
                     features[k] = {}

@@ -26,13 +26,15 @@ class LSTM(nn.Module):
         self.hidden_size = hidden_size
 
         # -> input x needs to have this shape: (batch_size, seq, input_size)
-        self.lstm = nn.LSTM(dim_input, hidden_size, num_layers, batch_first=True, dtype=torch.float64)
-        self.fc = nn.Linear(hidden_size, num_classes, dtype=torch.float64)
+        self.lstm = nn.LSTM(dim_input, hidden_size, num_layers, batch_first=True, dtype=torch.float32)
+        self.fc = nn.Linear(hidden_size, num_classes, dtype=torch.float32)
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         # Set initial hidden states (and cell states for LSTM)
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float64).to(device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float64).to(device)
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float32).to(device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float32).to(device)
 
         # x: (128, 5, 1024), h0: (2, n, 128)
         
