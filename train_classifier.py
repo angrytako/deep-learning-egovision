@@ -76,8 +76,6 @@ def main():
         #else:
         #models[m] = getattr(model_list, args.models[m].model)(1024, 8)
 
-        logger.info('\n ------------ \n')
-        logger.info(models[m])
         
 
     # the models are wrapped into the ActionRecognition task which manages all the training steps
@@ -251,13 +249,28 @@ def validate(model, val_loader, device, it, num_classes):
                 logits[m] = torch.zeros((args.test.num_clips, batch, num_classes)).to(device)
 
             clip = {}
-            for i_c in range(args.test.num_clips):
+
+            ##############################################
+            output = None
+
+            if args.need_clips == True:
+           
                 for m in modalities:
-                    clip[m] = data[m][:, i_c].to(device)
+                    clip[m] = data[m].to(device)
 
                 output, _ = model(clip)
                 for m in modalities:
-                    logits[m][i_c] = output[m]
+                    logits[m][0]= output[m] 
+
+            else:
+              for i_c in range(args.test.num_clips):
+                  for m in modalities:
+                      clip[m] = data[m][:, i_c].to(device)
+
+                  output, _ = model(clip)
+                  for m in modalities:
+                      logits[m][i_c] = output[m]
+            ######################################
 
             for m in modalities:
                 logits[m] = torch.mean(logits[m], dim=0)

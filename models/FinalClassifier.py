@@ -29,7 +29,7 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(dim_input, hidden_size, num_layers, batch_first=True, dtype=torch.float32)
         self.fc = nn.Linear(hidden_size, num_classes, dtype=torch.float32)
 
-    def forward(self, x, **kwargs):
+    def forward(self, x):
         # Set initial hidden states (and cell states for LSTM)
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -51,7 +51,7 @@ class LSTM(nn.Module):
          
         out = self.fc(out)
         # out: (n, 8)
-        return out
+        return out, {}
 
 
 
