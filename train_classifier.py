@@ -46,9 +46,6 @@ def main():
     # recover valid paths, domains, classes
     # this will output the domain conversion (D1 -> 8, et cetera) and the label list
     num_classes, valid_labels, source_domain, target_domain = utils.utils.get_domains_and_labels(args)
- 
-
-
     # device where everything is run
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -71,8 +68,16 @@ def main():
         
         #if args.model[m].model == 'LSTM':
         #  logger.info('\n----------------')
-        #(dim_input, hidden_size, num_layers, num_classes)
-        models[m] = getattr(model_list, args.models[m].model)(1024,128,2,8)
+        #(dim_input, hidden_size, num_layers, num_classes) --> this gives 64%
+
+        #svm with new layers is 62%
+
+        if args.models[m].model == 'LSTM':
+         
+          models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_features,args.models[m].hidden_size,args.models[m].num_layers,num_classes)
+        if args.models[m].model == 'Classifier':
+          models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_features, num_classes)
+
         #else:
         #models[m] = getattr(model_list, args.models[m].model)(1024, 8)
 
@@ -174,8 +179,7 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
         
         # for lstm
         if args.need_clips == True:
-              logger.info('ENTRATO')
-                      
+        
               for m in modalities:
                   data[m] = source_data[m].to(device)
 
@@ -186,7 +190,7 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
 
         else:
 
-          logger.info('NON ENTRATO')
+          
           for clip in range(args.train.num_clips):
               # in case of multi-clip training one clip per time is processed
               for m in modalities:

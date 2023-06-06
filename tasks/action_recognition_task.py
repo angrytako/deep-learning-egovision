@@ -106,7 +106,12 @@ class ActionRecognition(tasks.Task, ABC):
         loss_weight : float, optional
             weight of the classification loss, by default 1.0
         """
+        #logger.info(logits)  dictionary (rgb: tensor)
+        
         fused_logits = reduce(lambda x, y: x + y, logits.values())
+        #logger.info(fused_logits.shape) ([32, 5, 8])
+        # self.criterion = torch.nn.CrossEntropyLoss(weight=None, size_average=None, ignore_index=-100,
+                                                  # reduce=None, reduction='none')
         loss = self.criterion(fused_logits, label) / self.num_clips
         # Update the loss value, weighting it by the ratio of the batch size to the total 
         # batch size (for gradient accumulation)
