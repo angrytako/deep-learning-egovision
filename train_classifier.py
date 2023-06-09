@@ -77,6 +77,9 @@ def main():
           models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_features,args.models[m].hidden_size,args.models[m].num_layers,num_classes)
         if args.models[m].model == 'Classifier':
           models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_features, num_classes)
+        if args.models[m].model == 'Transformer':
+          models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_features,num_classes,args.models[m].hidden_size,args.models[m].num_layers)
+
 
         #else:
         #models[m] = getattr(model_list, args.models[m].model)(1024, 8)
@@ -195,7 +198,7 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
               # in case of multi-clip training one clip per time is processed
               for m in modalities:
                   data[m] = source_data[m][:, clip].to(device)
-
+              
               logits, _ = action_classifier.forward(data)
               action_classifier.compute_loss(logits, source_label, loss_weight=1)
               action_classifier.backward(retain_graph=False)

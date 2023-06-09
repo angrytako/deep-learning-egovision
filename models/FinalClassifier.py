@@ -61,6 +61,26 @@ class LSTM(nn.Module):
         # out: (n, 8)
         return out, {}
 
+class Transformer(nn.Module):
+    def __init__(self, input_dim, num_classes, hidden_size, num_layers, num_heads=4,  dropout=0.2):
+        super(Transformer, self).__init__()
+        self.embedding = nn.Linear(input_dim, hidden_size)
+        self.transformer = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(hidden_size, num_heads, dim_feedforward=hidden_size, dropout=dropout),
+            num_layers
+        )
+        self.fc = nn.Linear(hidden_size, num_classes)
+
+    def forward(self, x):
+        x = self.embedding(x)
+        x = x.unsqueeze(0)  # Add a batch dimension
+        x = self.transformer(x)
+        x = x.squeeze(0)  # Remove the batch dimension
+        x = x.mean(dim=0)  # Average pooling over the sequence length
+        x = self.fc(x)
+        return x, {}
+
+
 
 
 

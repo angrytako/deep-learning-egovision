@@ -1,5 +1,6 @@
 action: train # train or test OR save IN CASE OF "save_feat"
-name: SVM-train # name of the experiment needed for the logs
+name: Transformer
+#name: SVM-train # name of the experiment needed for the logs
 #name: LSTM-train # name of the experiment needed for the logs
 modality: ["RGB"] # modality used; needs to be specified in the model section as well; also used to store and retrieve extracted
 #features; IT ALSO HAS TO BE SET UNDER "DATASET" SO IT CAN SAVE/LOAD FEATURES OR INITIAL ACTUAL DATASET
@@ -46,7 +47,8 @@ dataset:
 # these are the action recognition models for each modality
 models:
   RGB:
-    model: Classifier # Name of the ACTUAL class used in training/testing or saving checkpoints. It needs to be imported in __init__.py
+    model: Transformer
+    #model: Classifier # Name of the ACTUAL class used in training/testing or saving checkpoints. It needs to be imported in __init__.py
     #model: LSTM
     normalize: False
     kwargs: {}
