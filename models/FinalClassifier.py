@@ -8,14 +8,22 @@ from torch import nn
 class Classifier(nn.Module):
     def __init__(self, dim_input, num_classes):
         super().__init__()
-        self.classifier = nn.Linear(dim_input, num_classes)
+        #self.classifier = nn.Linear(dim_input, num_classes)
+        self.model = nn.Sequential(
+            nn.Linear(dim_input, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, num_classes)
+        )
         """
         [TODO]: the classifier should be implemented by the students and different variations of it can be tested
         in order to understand which is the most performing one """
 #should return logits and features
 #features is ignored for now
     def forward(self, x):
-        return self.classifier(x), {}
+        return self.model(x), {}
+       # return self.classifier(x), {}
 
 
 
@@ -26,13 +34,15 @@ class LSTM(nn.Module):
         self.hidden_size = hidden_size
 
         # -> input x needs to have this shape: (batch_size, seq, input_size)
-        self.lstm = nn.LSTM(dim_input, hidden_size, num_layers, batch_first=True, dtype=torch.float64)
-        self.fc = nn.Linear(hidden_size, num_classes, dtype=torch.float64)
+        self.lstm = nn.LSTM(dim_input, hidden_size, num_layers, batch_first=True, dtype=torch.float32)
+        self.fc = nn.Linear(hidden_size, num_classes, dtype=torch.float32)
 
     def forward(self, x):
         # Set initial hidden states (and cell states for LSTM)
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float64).to(device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float64).to(device)
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float32).to(device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float32).to(device)
 
         # x: (128, 5, 1024), h0: (2, n, 128)
         
@@ -49,7 +59,7 @@ class LSTM(nn.Module):
          
         out = self.fc(out)
         # out: (n, 8)
-        return out
+        return out, {}
 
 
 

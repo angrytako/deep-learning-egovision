@@ -1,5 +1,6 @@
 action: train # train or test OR save IN CASE OF "save_feat"
 name: SVM-train # name of the experiment needed for the logs
+#name: LSTM-train # name of the experiment needed for the logs
 modality: ["RGB"] # modality used; needs to be specified in the model section as well; also used to store and retrieve extracted
 #features; IT ALSO HAS TO BE SET UNDER "DATASET" SO IT CAN SAVE/LOAD FEATURES OR INITIAL ACTUAL DATASET
 total_batch: 128 # total batch size if training is done with gradient accumulation
@@ -9,6 +10,7 @@ wandb_name: null # needed for wandb logging
 resume_from: null # checkpoint directory | NEEDS TO BE SET FOR TRAINING/VALIDATION BUT ALSO FOR SAVING CHECKPOINTS
 logname: null # name of the logs
 models_dir: null # directory containing all the models
+need_clips: False # for lstm true
 
 train: #THE SPECIFIC VALUES OF THE LEARNING IS IN THE MODELS SECTION!!!
   num_iter: 5000 # number of training iterations with total_batch size
@@ -44,11 +46,15 @@ dataset:
 # these are the action recognition models for each modality
 models:
   RGB:
-    #model: Classifier # Name of the ACTUAL class used in training/testing or saving checkpoints. It needs to be imported in __init__.py
-    model: LSTM
+    model: Classifier # Name of the ACTUAL class used in training/testing or saving checkpoints. It needs to be imported in __init__.py
+    #model: LSTM
     normalize: False
     kwargs: {}
     lr_steps: 3000
     lr: 0.01
     sgd_momentum: 0.9
     weight_decay: 1e-7
+    #added to give information abount the model dynamically
+    n_features: 1024
+    hidden_size: 128 #needed only for LSTM
+    num_layers: 3
