@@ -11,7 +11,10 @@ from typing import Dict, Tuple
 #serves as a wrapper to all the models and is used for training and testing
 class ActionRecognition(tasks.Task, ABC):
     """Action recognition model."""
-    
+    # action_classifier = tasks.ActionRecognition("action-classifier", models, args.batch_size,
+    #                                                   args.total_batch, args.models_dir, num_classes,
+    #                                                   args.train.num_clips, args.models, args=args)
+
     def __init__(self, name: str, task_models: Dict[str, torch.nn.Module], batch_size: int, 
                  total_batch: int, models_dir: str, num_classes: int,
                  num_clips: int, model_args: Dict[str, float], args, **kwargs) -> None:
@@ -76,6 +79,7 @@ class ActionRecognition(tasks.Task, ABC):
         logits = {}
         features = {}
         for i_m, m in enumerate(self.modalities):
+
             logits[m], feat = self.task_models[m](x=data[m], **kwargs)
             if i_m == 0:
                 for k in feat.keys():
