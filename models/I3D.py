@@ -343,7 +343,8 @@ class I3D(models.VideoModel):
         self.num_class = num_class
         self.model_config = model_config
         self.feat_dim = 1024
-        if modality == "RGB":
+        self.modality = modality
+        if modality == "RGB" or modality == "EMG":
             channel = 3
             self.base_model = InceptionI3d(num_classes=self.num_class,
                                            in_channels=channel,
@@ -357,7 +358,10 @@ class I3D(models.VideoModel):
         self.input_mean, self.input_std, self.range = None, None, None
 
     def forward(self, x):
-        return self.base_model(x)
+        if self.modality == "RGB":
+            return self.base_model(x)
+        elif self.modality == "EMG":
+            return None, {"features": x}
 
     def get_augmentation(self, modality):
         if modality == 'RGB':
@@ -376,6 +380,8 @@ class I3D(models.VideoModel):
                 ToTorchFormatTensor(div=not self.model_config.normalize),
                 GroupNormalize(self.model_config.normalize, self.input_mean, self.input_std, self.range)
             ])
+        elif modality == 'EMG':
+            return None, None
         else:
             raise NotImplementedError
 

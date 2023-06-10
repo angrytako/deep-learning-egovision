@@ -123,37 +123,40 @@ def save_feat(model, loader, device, it, num_classes):
                     sample["features_" + m] = features[m][:, i].cpu().detach().numpy()
                 results_dict["features"].append(sample)
             num_samples += batch
+            if args.compute_accuracy == True:
+                model.compute_accuracy(logits, label)
 
-            model.compute_accuracy(logits, label)
-
-            if (i_val + 1) % (len(loader) // 5) == 0:
-                logger.info("[{}/{}] top1= {:.3f}% top5 = {:.3f}%".format(i_val + 1, len(loader),
-                                                                          model.accuracy.avg[1], model.accuracy.avg[5]))
+                if (i_val + 1) % (len(loader) // 5) == 0:
+                    logger.info("[{}/{}] top1= {:.3f}% top5 = {:.3f}%".format(i_val + 1, len(loader),
+                                                                            model.accuracy.avg[1], model.accuracy.avg[5]))
 
         os.makedirs("saved_features", exist_ok=True)
         pickle.dump(results_dict, open(os.path.join("saved_features", args.name + "_" +
                                                     args.dataset.shift.split("-")[1] + "_" +
                                                     args.split + ".pkl"), 'wb'))
+        if args.compute_accuracy == True:
+            class_accuracies = [(x / y) * 100 for x, y in zip(model.accuracy.correct, model.accuracy.total)]
+            logger.info('Final accuracy: top1 = %.2f%%\ttop5 = %.2f%%' % (model.accuracy.avg[1],
+                                                                        model.accuracy.avg[5]))
+            for i_class, class_acc in enumerate(class_accuracies):
+                logger.info('Class %d = [%d/%d] = %.2f%%' % (i_class,
+                                                            int(model.accuracy.correct[i_class]),
+                                                            int(model.accuracy.total[i_class]),
+                                                            class_acc))
+    if args.compute_accuracy == True:
+        logger.info('Accuracy by averaging class accuracies (same weight for each class): {}%'
+                    .format(np.array(class_accuracies).mean(axis=0)))
+        test_results = {'top1': model.accuracy.avg[1], 'top5': model.accuracy.avg[5],
+                        'class_accuracies': np.array(class_accuracies)}
 
-        class_accuracies = [(x / y) * 100 for x, y in zip(model.accuracy.correct, model.accuracy.total)]
-        logger.info('Final accuracy: top1 = %.2f%%\ttop5 = %.2f%%' % (model.accuracy.avg[1],
-                                                                      model.accuracy.avg[5]))
-        for i_class, class_acc in enumerate(class_accuracies):
-            logger.info('Class %d = [%d/%d] = %.2f%%' % (i_class,
-                                                         int(model.accuracy.correct[i_class]),
-                                                         int(model.accuracy.total[i_class]),
-                                                         class_acc))
+        with open(os.path.join(args.log_dir, f'val_precision_{args.dataset.shift.split("-")[0]}-'
+                                            f'{args.dataset.shift.split("-")[-1]}.txt'), 'a+') as f:
+            f.write("[%d/%d]\tAcc@top1: %.2f%%\n" % (it, args.train.num_iter, test_results['top1']))
 
-    logger.info('Accuracy by averaging class accuracies (same weight for each class): {}%'
-                .format(np.array(class_accuracies).mean(axis=0)))
-    test_results = {'top1': model.accuracy.avg[1], 'top5': model.accuracy.avg[5],
-                    'class_accuracies': np.array(class_accuracies)}
-
-    with open(os.path.join(args.log_dir, f'val_precision_{args.dataset.shift.split("-")[0]}-'
-                                         f'{args.dataset.shift.split("-")[-1]}.txt'), 'a+') as f:
-        f.write("[%d/%d]\tAcc@top1: %.2f%%\n" % (it, args.train.num_iter, test_results['top1']))
-
-    return test_results
+        return test_results
+    else:
+        return {'top1': 0, 'top5': 0,
+                        'class_accuracies': np.array([])}
 
 
 if __name__ == '__main__':

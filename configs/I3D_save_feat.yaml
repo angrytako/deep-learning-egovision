@@ -4,14 +4,15 @@ action: save # train or test
 name: saved_feat_I3D
 split: test
 resume_from: ./saved_models/I3D_SourceOnlyD2
-
+compute_accuracy: False
 save:
   num_clips: 5
   dense_sampling:
     RGB: False
+    EMG: Null
   num_frames_per_clip:
     RGB: 15
-
+    EMG: Null
 dataset:
   annotations_path: train_val
   shift: D2-D2
@@ -21,12 +22,27 @@ dataset:
   RGB:
     data_path: /content/ek_data/frames
     tmpl: "img_{:010d}.jpg"
+   EMG:
+    data_path: /content/actionNet/
+    tmpl: None
   Event:
     rgb4e: 6
 
 # these are the action recognition models for each modality
 models:
   RGB:
+    model: I3D
+    dropout: 0.5
+    normalize: False
+    resolution: 224
+    kwargs: {}
+    lr_steps: 3000
+    lr: 0.01
+    sgd_momentum: 0.9
+    weight_decay: 1e-7
+    weight_i3d_rgb: './pretrained_i3d/rgb_imagenet.pt'
+
+  EMG:
     model: I3D
     dropout: 0.5
     normalize: False

@@ -57,12 +57,12 @@ class EpicKitchensDataset(data.Dataset, ABC):
             self.model_features = None
             for m in self.modalities:
                 # load features for each modality
-                #model_features = pd.DataFrame(pd.read_pickle(os.path.join("saved_features",
-                                                                          #self.dataset_conf[m].features_name + "_" +
-                                                                         # pickle_name))['features'])[["uid", "features_" + m]]
-                model_features = pd.DataFrame(pd.read_pickle(os.path.join("/content/drive/MyDrive/Ilaria/PROGETTO_MLDL/saved_features",
+                model_features = pd.DataFrame(pd.read_pickle(os.path.join("saved_features",
                                                                           self.dataset_conf[m].features_name + "_" +
-                                                                          pickle_name))['features'])[["uid", "features_" + m]]
+                                                                           pickle_name))['features'])[["uid", "features_" + m]]
+                # model_features = pd.DataFrame(pd.read_pickle(os.path.join("/content/drive/MyDrive/Ilaria/PROGETTO_MLDL/saved_features",
+                #                                                           self.dataset_conf[m].features_name + "_" +
+                #                                                           pickle_name))['features'])[["uid", "features_" + m]]
                 if self.model_features is None:
                     self.model_features = model_features
                 else:
@@ -86,10 +86,14 @@ class EpicKitchensDataset(data.Dataset, ABC):
         # A record is a loaded file. If a file is a clip, then this is wrong, otherwise if the file is the entire video
         # then the this is the actual number of frames that need to be sampled. I will assume the second option since 
         # they write it like this. Also is a one dimensional array, judging by how it's used
+ 
+        
+        tot_num_frames = record.num_frames[modality]
         is_dense_sampling = self.dense_sampling[modality]
+        if is_dense_sampling == None: return np.array([i for i in range(0, tot_num_frames)])
         num_clips = self.num_clips
         num_frames_per_clip = self.num_frames_per_clip[modality]
-        tot_num_frames = record.num_frames[modality]
+        
         return self._get_dense_sample_(num_clips, num_frames_per_clip, tot_num_frames, stride=2) if is_dense_sampling else self._get_uniform_sample_(num_clips, num_frames_per_clip, tot_num_frames)
         
     def _get_uniform_sample_(self, num_clips, num_frames_per_clip, tot_num_frames):
@@ -100,7 +104,6 @@ class EpicKitchensDataset(data.Dataset, ABC):
             frames = np.hstack([frames,np.int16(np.linspace(first, last-1, num_frames_per_clip))])
         return frames
     
-    #TODO implement yaml level stride
     def _get_dense_sample_(self, num_clips, num_frames_per_clip, tot_num_frames, stride=2):
         
         frames_per_part = (num_frames_per_clip-1)//2
@@ -135,7 +138,7 @@ class EpicKitchensDataset(data.Dataset, ABC):
         # notice that it is already converted into a EpicVideoRecord object so that here you can access
         # all the properties of the sample easily
         record = self.video_list[index]
-
+#TODO figure out how this works
         if self.load_feat:
             sample = {}
             sample_row = self.model_features[self.model_features["uid"] == int(record.uid)]
@@ -175,10 +178,12 @@ class EpicKitchensDataset(data.Dataset, ABC):
             frame = self._load_data(modality, record, p)
             images.extend(frame)
         # finally, all the transformations are applied
-        process_data = self.transform[modality](images)
+        process_data = images
+        if self.transform != None:
+            process_data = self.transform[modality](images)
         return process_data, record.label
 
-    def _load_data(self, modality, record, idx):
+    def _load_data(self, modality, record:EpicVideoRecord, idx):
         data_path = self.dataset_conf[modality].data_path
         tmpl = self.dataset_conf[modality].tmpl
 
@@ -200,7 +205,10 @@ class EpicKitchensDataset(data.Dataset, ABC):
                 else:
                     raise FileNotFoundError
             return [img]
-        
+        if modality == 'EMG':
+            emg_readings_series = pd.read_pickle(os.path.join(data_path, record.untrimmed_video_name+".pkl"))
+            return emg_readings_series[record.uid][idx]
+
         else:
             raise NotImplementedError("Modality not implemented")
 
