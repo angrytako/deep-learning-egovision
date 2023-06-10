@@ -2,7 +2,7 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 from torch import nn
-
+from utils.logger import logger
 #this is the initialization line in the original code:
 #models[m] = getattr(model_list, args.models[m].model)()
 class Classifier(nn.Module):
@@ -75,7 +75,7 @@ class Transformer(nn.Module):
         x = self.embedding(x)
         x = x.unsqueeze(0)  # Add a batch dimension
         x = self.transformer(x)
-        x = x.squeeze(0)  # Remove the batch dimension
+        #x = x.squeeze(0)  # Remove the batch dimension
         x = x.mean(dim=0)  # Average pooling over the sequence length
         x = self.fc(x)
         return x, {}

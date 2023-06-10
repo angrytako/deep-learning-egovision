@@ -76,7 +76,9 @@ class ActionRecognition(tasks.Task, ABC):
         logits = {}
         features = {}
         for i_m, m in enumerate(self.modalities):
+       
             logits[m], feat = self.task_models[m](x=data[m], **kwargs)
+            
             if i_m == 0:
                 for k in feat.keys():
                     features[k] = {}
@@ -99,6 +101,8 @@ class ActionRecognition(tasks.Task, ABC):
         """
         fused_logits = reduce(lambda x, y: x + y, logits.values())
         loss = self.criterion(fused_logits, label) / self.num_clips
+        
+
         # Update the loss value, weighting it by the ratio of the batch size to the total 
         # batch size (for gradient accumulation)
         self.loss.update(torch.mean(loss_weight * loss) / (self.total_batch / self.batch_size), self.batch_size)

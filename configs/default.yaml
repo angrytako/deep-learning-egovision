@@ -1,5 +1,5 @@
 action: train # train or test OR save IN CASE OF "save_feat"
-name: Transformer
+name: Transformer-train
 #name: SVM-train # name of the experiment needed for the logs
 #name: LSTM-train # name of the experiment needed for the logs
 modality: ["RGB"] # modality used; needs to be specified in the model section as well; also used to store and retrieve extracted
@@ -58,5 +58,5 @@ models:
     weight_decay: 1e-7
     #added to give information abount the model dynamically
     n_features: 1024
-    hidden_size: 128 #needed only for LSTM
+    hidden_size: 128 
     num_layers: 3
