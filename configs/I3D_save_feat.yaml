@@ -22,7 +22,7 @@ dataset:
   RGB:
     data_path: /content/ek_data/frames
     tmpl: "img_{:010d}.jpg"
-   EMG:
+  EMG:
     data_path: /content/actionNet/
     tmpl: None
   Event:

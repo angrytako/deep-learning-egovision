@@ -90,7 +90,7 @@ class EpicKitchensDataset(data.Dataset, ABC):
         
         tot_num_frames = record.num_frames[modality]
         is_dense_sampling = self.dense_sampling[modality]
-        if is_dense_sampling == None: return np.array([i for i in range(0, tot_num_frames)])
+        if is_dense_sampling is None: return np.array([i for i in range(0, tot_num_frames)], dtype=np.int16)
         num_clips = self.num_clips
         num_frames_per_clip = self.num_frames_per_clip[modality]
         
@@ -123,10 +123,12 @@ class EpicKitchensDataset(data.Dataset, ABC):
         # Remember that the returned array should have size              #
         #           num_clip x num_frames_per_clip                       #
         ##################################################################
+        tot_num_frames = record.num_frames[modality]
         is_dense_sampling = self.dense_sampling[modality]
+        if is_dense_sampling is None: return np.array([i for i in range(0, tot_num_frames)], dtype=np.int16)
+        
         num_clips = self.num_clips
         num_frames_per_clip = self.num_frames_per_clip[modality]
-        tot_num_frames = record.num_frames[modality]
         return self._get_dense_sample_(num_clips, num_frames_per_clip, tot_num_frames, stride=2) if is_dense_sampling else self._get_uniform_sample_(num_clips, num_frames_per_clip, tot_num_frames)
         
 
@@ -138,7 +140,6 @@ class EpicKitchensDataset(data.Dataset, ABC):
         # notice that it is already converted into a EpicVideoRecord object so that here you can access
         # all the properties of the sample easily
         record = self.video_list[index]
-#TODO figure out how this works
         if self.load_feat:
             sample = {}
             sample_row = self.model_features[self.model_features["uid"] == int(record.uid)]
@@ -179,8 +180,9 @@ class EpicKitchensDataset(data.Dataset, ABC):
             images.extend(frame)
         # finally, all the transformations are applied
         process_data = images
-        if self.transform != None:
+        if self.transform[modality] is not None:
             process_data = self.transform[modality](images)
+        else: process_data = np.array(images)
         return process_data, record.label
 
     def _load_data(self, modality, record:EpicVideoRecord, idx):
@@ -207,7 +209,7 @@ class EpicKitchensDataset(data.Dataset, ABC):
             return [img]
         if modality == 'EMG':
             emg_readings_series = pd.read_pickle(os.path.join(data_path, record.untrimmed_video_name+".pkl"))
-            return emg_readings_series[record.uid][idx]
+            return [emg_readings_series[record.uid][idx]]
 
         else:
             raise NotImplementedError("Modality not implemented")
