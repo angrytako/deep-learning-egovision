@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from utils.logger import logger
 from utils.transforms import *
 import models
-
+import torch
 
 class InceptionI3d(nn.Module):
     """Inception-v1 I3D architecture.
@@ -342,7 +342,7 @@ class I3D(models.VideoModel):
         super(I3D, self).__init__(num_class, model_config, **kwargs)
         self.num_class = num_class
         self.model_config = model_config
-        self.feat_dim = 1024
+        self.feat_dim = 1024 if modality == "RGB" else 400
         self.modality = modality
         if modality == "RGB" or modality == "EMG":
             channel = 3
@@ -361,7 +361,7 @@ class I3D(models.VideoModel):
         if self.modality == "RGB":
             return self.base_model(x)
         elif self.modality == "EMG":
-            return None, {"features": x}
+            return torch.tensor([0 for _ in  range(self.num_class)]), {"features":x.flatten()}
 
     def get_augmentation(self, modality):
         if modality == 'RGB':

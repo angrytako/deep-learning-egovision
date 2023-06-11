@@ -3,7 +3,8 @@ import torch
 
 
 def get_domains_and_labels(args):
-    num_verbs_dict = {'D1': 8, 'D2': 8, 'D3': 8, "S0401":8}
+    #TODO S0401 needs to be 8 for feature extraction, but 12 for classification... this is not ideal, obviously
+    num_verbs_dict = {'D1': 8, 'D2': 8, 'D3': 8, "S0401":12}
     num_verbs = num_verbs_dict[args.dataset.shift.split("-")[0]]
     domains = {'D1': 8, 'D2': 1, 'D3': 22, "S0401":8}
     source_domain = domains[args.dataset.shift.split("-")[0]]

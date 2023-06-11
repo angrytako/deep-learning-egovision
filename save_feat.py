@@ -96,11 +96,20 @@ def save_feat(model, loader, device, it, num_classes):
             label = label.to(device)
 
             for m in modalities:
-                batch, _, height, width = data[m].shape
-                data[m] = data[m].reshape(batch, args.test.num_clips,
-                                          args.test.num_frames_per_clip[m], -1, height, width)
-                data[m] = data[m].permute(1, 0, 3, 2, 4, 5)
 
+                if len(data[m].shape) == 4: 
+                    batch, _, height, width = data[m].shape
+                    data[m] = data[m].reshape(batch, args.test.num_clips,
+                                            args.test.num_frames_per_clip[m], -1, height, width)
+                    data[m] = data[m].permute(1, 0, 3, 2, 4, 5)
+                #EMG: batch_len, full_arr_len (if no sampling), 2 (vector of single activations)
+                elif len(data[m].shape) == 3: 
+                     batch, arr_len, vec_len = data[m].shape
+
+                     data[m] = data[m][:, 0 : ((arr_len//args.test.num_clips)*args.test.num_clips),:].reshape(batch, args.test.num_clips,
+                                            -1, vec_len)
+                     data[m] = data[m].permute(1, 0, 3, 2)
+                     
                 logits[m] = torch.zeros((args.test.num_clips, batch, num_classes)).to(device)
                 features[m] = torch.zeros((args.test.num_clips, batch, model.task_models[m]
                                            .module.feat_dim)).to(device)

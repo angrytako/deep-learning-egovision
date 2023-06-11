@@ -3,7 +3,7 @@
 action: save # train or test
 name: saved_feat_I3D
 split: test
-resume_from: ./saved_models/I3D_SourceOnlyD2
+resume_from: null
 compute_accuracy: False
 save:
   num_clips: 5
