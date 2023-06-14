@@ -109,7 +109,7 @@ def save_feat(model, loader, device, it, num_classes):
                      data[m] = data[m][:, 0 : ((arr_len//args.test.num_clips)*args.test.num_clips),:].reshape(batch, args.test.num_clips,
                                             -1, vec_len)
                      data[m] = data[m].permute(1, 0, 3, 2)
-                     
+ 
                 logits[m] = torch.zeros((args.test.num_clips, batch, num_classes)).to(device)
                 features[m] = torch.zeros((args.test.num_clips, batch, model.task_models[m]
                                            .module.feat_dim)).to(device)

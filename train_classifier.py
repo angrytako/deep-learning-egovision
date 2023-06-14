@@ -73,13 +73,13 @@ def main():
         #svm with new layers is 62%
 
         if args.models[m].model == 'LSTM':
-         
           models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_features,args.models[m].hidden_size,args.models[m].num_layers,num_classes)
-        if args.models[m].model == 'Classifier':
+        elif args.models[m].model == 'Classifier':
           models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_features, num_classes)
-        if args.models[m].model == 'Transformer':
+        elif args.models[m].model == 'Transformer':
           models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_features,num_classes,args.models[m].hidden_size,args.models[m].num_layers)
-
+        elif args.models[m].model == 'CNN':
+          models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_channels,args.models[m].hidden_size,args.models[m].num_layers,num_classes)
 
         #else:
         #models[m] = getattr(model_list, args.models[m].model)(1024, 8)
@@ -184,7 +184,10 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
         if args.need_clips == True:
         
               for m in modalities:
-                  data[m] = source_data[m].to(device)
+                  if m == "EMG_SPEC_RAW":
+                    data[m] = source_data[m].permute(0,2,3,1).to(device)
+                  else:
+                    data[m] = source_data[m].to(device)
 
               logits, _ = action_classifier.forward(data)
               action_classifier.compute_loss(logits, source_label, loss_weight=1)
@@ -192,8 +195,6 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
               action_classifier.compute_accuracy(logits, source_label)
 
         else:
-
-          
           for clip in range(args.train.num_clips):
               # in case of multi-clip training one clip per time is processed
               

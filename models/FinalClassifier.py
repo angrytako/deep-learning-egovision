@@ -1,6 +1,8 @@
 import torch
 from torch import nn
 from utils.logger import logger
+from collections import OrderedDict
+
 #this is the initialization line in the original code:
 #models[m] = getattr(model_list, args.models[m].model)()
 class Classifier(nn.Module):
@@ -79,3 +81,55 @@ class Transformer(nn.Module):
         return x, {}
 
 
+class CNN(nn.Module):
+        #input_shape = nr. of channels; for spectograms is 16
+    def __init__(self, input_shape, hidden_units, ouput_shape) -> None:
+        super().__init__()
+        self.conv_block1 = nn.Sequential(
+            nn.Conv2d(in_channels=input_shape, out_channels=hidden_units, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=hidden_units, out_channels=hidden_units, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2)
+        )
+
+        self.conv_block2 = nn.Sequential(
+            nn.Conv2d(in_channels=hidden_units, out_channels=hidden_units,kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=hidden_units, out_channels=hidden_units,kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2)
+        )
+        self.fully_connected = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(hidden_units*4*62,out_features=1024) 
+        )
+        self.logits =  nn.Linear(1024,out_features=ouput_shape)
+    
+    def forward(self, x):
+        x = self.conv_block1(x)
+        x = self.conv_block2(x)
+        features = self.fully_connected(x)
+        return self.logits(features), {"features": features}
+    
+    def get_augmentation(self, modality):
+        return None, None
+    
+    @staticmethod
+    def load(path):
+        logger.info("Loading Kinetics weights CNN")
+        state_dict = torch.load(path)
+        new_state_dict = OrderedDict()
+        for k, v in state_dict.items():
+            name = k  # [7:]  # remove `module.`
+            check_bn = name.split(".")
+
+            if "logits" in check_bn:
+                logger.info(" * Skipping Logits weight for \'{}\'".format(name))
+                pass
+            else:
+                # print(" * Param", name)
+                new_state_dict[name] = v
+
+            # load params
+        return new_state_dict

@@ -60,9 +60,6 @@ class EpicKitchensDataset(data.Dataset, ABC):
                 model_features = pd.DataFrame(pd.read_pickle(os.path.join("saved_features",
                                                                           self.dataset_conf[m].features_name + "_" +
                                                                            pickle_name))['features'])[["uid", "features_" + m]]
-                # model_features = pd.DataFrame(pd.read_pickle(os.path.join("/content/drive/MyDrive/Ilaria/PROGETTO_MLDL/saved_features",
-                #                                                           self.dataset_conf[m].features_name + "_" +
-                #                                                           pickle_name))['features'])[["uid", "features_" + m]]
                 if self.model_features is None:
                     self.model_features = model_features
                 else:
@@ -72,7 +69,6 @@ class EpicKitchensDataset(data.Dataset, ABC):
 
     def _get_train_indices(self, record:EpicVideoRecord, modality='RGB'):
         ##################################################################
-        # TODO: implement sampling for training mode                     #
         # Give the record and the modality, this function should return  #
         # a list of integers representing the frames to be selected from #
         # the video clip.                                                #
@@ -116,7 +112,6 @@ class EpicKitchensDataset(data.Dataset, ABC):
 
     def _get_val_indices(self, record:EpicVideoRecord, modality):
         ##################################################################
-        # TODO: implement sampling for testing mode                      #
         # Give the record and the modality, this function should return  #
         # a list of integers representing the frames to be selected from #
         # the video clip.                                                #
@@ -210,6 +205,10 @@ class EpicKitchensDataset(data.Dataset, ABC):
         if modality == 'EMG':
             emg_readings_series = pd.read_pickle(os.path.join(data_path, record.untrimmed_video_name+".pkl"))
             return [emg_readings_series[record.uid][idx]]
+        
+        if modality == 'EMG_SPEC' or "EMG_SPEC_RAW":
+            emg_spec_series = pd.read_pickle(os.path.join(data_path, record.untrimmed_video_name+"SPEC.pkl"))
+            return [emg_spec_series[record.uid][:,:,idx]]
 
         else:
             raise NotImplementedError("Modality not implemented")
