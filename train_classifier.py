@@ -184,7 +184,7 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
         if args.need_clips == True:
         
               for m in modalities:
-                  if m == "EMG_SPEC_RAW":
+                  if m == "EMG_SPEC":
                     data[m] = source_data[m].permute(0,2,3,1).to(device)
                   else:
                     data[m] = source_data[m].to(device)
@@ -199,7 +199,7 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
               # in case of multi-clip training one clip per time is processed
               
               for m in modalities: 
-                if m == "EMG_SPEC_RAW":
+                if m == "EMG_SPEC":
                     data[m] = source_data[m][:, clip].permute(0,2,3,1).to(device)  
                 else:               
                     data[m] = source_data[m][:, clip].to(device)

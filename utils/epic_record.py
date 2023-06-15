@@ -37,7 +37,9 @@ class EpicVideoRecord(VideoRecord):
                 'Flow': int((self.end_frame - self.start_frame) / 2),
                 'Event': int((self.end_frame - self.start_frame) / self.dataset_conf["Event"].rgb4e),
                 'Spec': self.end_frame - self.start_frame,
-                'EMG': self._series["tot_emg_vects"]}
+                'EMG': self._series["tot_emg_vects"],
+                "EMG_SPEC": 251
+                }
 
     @property
     def label(self):

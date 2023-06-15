@@ -87,7 +87,7 @@ class EpicKitchensDataset(data.Dataset, ABC):
         tot_num_frames = record.num_frames[modality]
         is_dense_sampling = self.dense_sampling[modality]
         num_clips = self.num_clips
-        
+
         if is_dense_sampling is None: return np.array([i for i in range(0, (tot_num_frames//num_clips)*num_clips)], dtype=np.int16)
 
         num_frames_per_clip = self.num_frames_per_clip[modality]
@@ -208,7 +208,7 @@ class EpicKitchensDataset(data.Dataset, ABC):
             emg_readings_series = pd.read_pickle(os.path.join(data_path, record.untrimmed_video_name+".pkl"))
             return [emg_readings_series[record.uid][idx]]
         
-        if modality == 'EMG_SPEC' or "EMG_SPEC_RAW":
+        if modality == 'EMG_SPEC':
             emg_spec_series = pd.read_pickle(os.path.join(data_path, record.untrimmed_video_name+"SPEC.pkl"))
             return [emg_spec_series[record.uid][:,:,idx]]
 
