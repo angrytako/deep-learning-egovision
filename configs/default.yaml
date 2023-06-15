@@ -12,7 +12,7 @@ resume_from: null # checkpoint directory | NEEDS TO BE SET FOR TRAINING/VALIDATI
 logname: null # name of the logs
 models_dir: null # directory containing all the models
 need_clips: False # for lstm true
-
+load_feat: True
 train: #THE SPECIFIC VALUES OF THE LEARNING IS IN THE MODELS SECTION!!!
   num_iter: 5000 # number of training iterations with total_batch size
   lr_steps: 3000 # steps before reducing learning rate
@@ -51,8 +51,8 @@ dataset:
     data_path: ./saved_features/ # path to RGB data
     tmpl: null # format of RGB filenames
     features_name: features_actionNet_uniform_15
-  EMG:
-    data_path: ./saved_features/ # path to RGB data
+  EMG_SPEC:
+    data_path: ./actionNet/ # path to RGB data
     tmpl: null # format of RGB filenames
     features_name: yet_to_be_named
   Event: # not neeeded for the project
@@ -97,5 +97,5 @@ models:
     weight_decay: 1e-7
     #added to give information abount the model dynamically
     n_channels: 16
-    hidden_size: 128 
+    hidden_size: 10 
   

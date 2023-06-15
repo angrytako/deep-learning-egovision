@@ -102,7 +102,7 @@ class CNN(nn.Module):
         )
         self.fully_connected = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(hidden_units*4*62,out_features=1024) 
+            nn.Linear(hidden_units*48,out_features=1024) 
         )
         self.logits =  nn.Linear(1024,out_features=ouput_shape)
     

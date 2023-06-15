@@ -85,7 +85,7 @@ class EpicKitchensDataset(data.Dataset, ABC):
  
         
         tot_num_frames = record.num_frames[modality]
-        is_dense_sampling = self.dense_sampling[modality]
+        is_dense_sampling = self.dense_sampling[modality] if self.dense_sampling is not None else None
         num_clips = self.num_clips
 
         if is_dense_sampling is None: return np.array([i for i in range(0, (tot_num_frames//num_clips)*num_clips)], dtype=np.int16)
@@ -121,7 +121,7 @@ class EpicKitchensDataset(data.Dataset, ABC):
         #           num_clip x num_frames_per_clip                       #
         ##################################################################
         tot_num_frames = record.num_frames[modality]
-        is_dense_sampling = self.dense_sampling[modality]
+        is_dense_sampling = self.dense_sampling[modality] if self.dense_sampling is not None else None
         num_clips = self.num_clips
         if is_dense_sampling is None: return np.array([i for i in range(0, (tot_num_frames//num_clips)*num_clips)], dtype=np.int16)
         
@@ -177,7 +177,7 @@ class EpicKitchensDataset(data.Dataset, ABC):
             images.extend(frame)
         # finally, all the transformations are applied
         process_data = images
-        if self.transform[modality] is not None:
+        if self.transform is not None and [modality] is not None:
             process_data = self.transform[modality](images)
         else: process_data = np.array(images)
         return process_data, record.label

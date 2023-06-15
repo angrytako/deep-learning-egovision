@@ -102,14 +102,16 @@ def main():
         training_iterations = args.train.num_iter * (args.total_batch // args.batch_size)
         # all dataloaders are generated here
         train_loader = torch.utils.data.DataLoader(EpicKitchensDataset(args.dataset.shift.split("-")[0], modalities,
-                                                                       'train', args.dataset, None, None, None,
-                                                                       None, load_feat=True),
+                                                                       'train', args.dataset,
+                                                                 args.train.num_frames_per_clip,
+                                                                 args.train.num_clips, args.train.dense_sampling, load_feat=args.load_feat),
                                                    batch_size=args.batch_size, shuffle=True,
                                                    num_workers=args.dataset.workers, pin_memory=True, drop_last=True)
 
         val_loader = torch.utils.data.DataLoader(EpicKitchensDataset(args.dataset.shift.split("-")[-1], modalities,
-                                                                     'val', args.dataset, None, None, None,
-                                                                     None, load_feat=True),
+                                                                     'val', args.dataset,
+                                                                 args.test.num_frames_per_clip,
+                                                                 args.test.num_clips, args.test.dense_sampling, load_feat=args.load_feat),
                                                  batch_size=args.batch_size, shuffle=False,
                                                  num_workers=args.dataset.workers, pin_memory=True, drop_last=False)
         train(action_classifier, train_loader, val_loader, device, num_classes)
@@ -200,12 +202,12 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
               
               for m in modalities: 
                 if m == "EMG_SPEC":
-                    data[m] = source_data[m][:, clip].permute(0,2,3,1).to(device)  
+                    data[m] = source_data[m].reshape(args.batch_size,args.train.num_clips, -1, 16, 17)
+                    data[m] = data[m][:, clip].permute(0,2,3,1).to(device)  
                 else:               
                     data[m] = source_data[m][:, clip].to(device)
               
               logits, _ = action_classifier.forward(data)
-              
               action_classifier.compute_loss(logits, source_label, loss_weight=1)
               action_classifier.backward(retain_graph=False)
               action_classifier.compute_accuracy(logits, source_label)
