@@ -86,8 +86,10 @@ class EpicKitchensDataset(data.Dataset, ABC):
         
         tot_num_frames = record.num_frames[modality]
         is_dense_sampling = self.dense_sampling[modality]
-        if is_dense_sampling is None: return np.array([i for i in range(0, tot_num_frames)], dtype=np.int16)
         num_clips = self.num_clips
+        
+        if is_dense_sampling is None: return np.array([i for i in range(0, (tot_num_frames//num_clips)*num_clips)], dtype=np.int16)
+
         num_frames_per_clip = self.num_frames_per_clip[modality]
         
         return self._get_dense_sample_(num_clips, num_frames_per_clip, tot_num_frames, stride=2) if is_dense_sampling else self._get_uniform_sample_(num_clips, num_frames_per_clip, tot_num_frames)
@@ -120,9 +122,9 @@ class EpicKitchensDataset(data.Dataset, ABC):
         ##################################################################
         tot_num_frames = record.num_frames[modality]
         is_dense_sampling = self.dense_sampling[modality]
-        if is_dense_sampling is None: return np.array([i for i in range(0, tot_num_frames)], dtype=np.int16)
-        
         num_clips = self.num_clips
+        if is_dense_sampling is None: return np.array([i for i in range(0, (tot_num_frames//num_clips)*num_clips)], dtype=np.int16)
+        
         num_frames_per_clip = self.num_frames_per_clip[modality]
         return self._get_dense_sample_(num_clips, num_frames_per_clip, tot_num_frames, stride=2) if is_dense_sampling else self._get_uniform_sample_(num_clips, num_frames_per_clip, tot_num_frames)
         

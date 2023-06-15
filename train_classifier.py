@@ -198,8 +198,11 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
           for clip in range(args.train.num_clips):
               # in case of multi-clip training one clip per time is processed
               
-              for m in modalities:                  
-                  data[m] = source_data[m][:, clip].to(device)
+              for m in modalities: 
+                if m == "EMG_SPEC_RAW":
+                    data[m] = source_data[m][:, clip].permute(0,2,3,1).to(device)  
+                else:               
+                    data[m] = source_data[m][:, clip].to(device)
               
               logits, _ = action_classifier.forward(data)
               
