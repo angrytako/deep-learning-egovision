@@ -79,7 +79,7 @@ def main():
         elif args.models[m].model == 'Transformer':
           models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_features,num_classes,args.models[m].hidden_size,args.models[m].num_layers)
         elif args.models[m].model == 'CNN':
-          models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_channels,args.models[m].hidden_size,args.models[m].num_layers,num_classes)
+          models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_channels,args.models[m].hidden_size,num_classes)
 
         #else:
         #models[m] = getattr(model_list, args.models[m].model)(1024, 8)
