@@ -202,7 +202,7 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
               
               for m in modalities: 
                 if m == "EMG_SPEC":
-                    data[m] = source_data[m].reshape(args.batch_size,args.train.num_clips, -1, 16, 17)
+                    data[m] = source_data[m].reshape(source_data[m].shape[0],args.train.num_clips, -1, 16, 17)
                     data[m] = data[m][:, clip].permute(0,2,3,1).to(device)  
                 else:               
                     data[m] = source_data[m][:, clip].to(device)
@@ -271,7 +271,10 @@ def validate(model, val_loader, device, it, num_classes):
             if args.need_clips == True:
            
                 for m in modalities:
-                    clip[m] = data[m].to(device)
+                    if m == "EMG_SPEC":
+                        clip[m] = data[m].permute(0,2,3,1).to(device)
+                    else:    
+                        clip[m] = data[m].to(device)
 
                 output, _ = model(clip)
                 for m in modalities:
@@ -280,7 +283,12 @@ def validate(model, val_loader, device, it, num_classes):
             else:
               for i_c in range(args.test.num_clips):
                   for m in modalities:
-                      clip[m] = data[m][:, i_c].to(device)
+                    if m == "EMG_SPEC":
+                        #data[m].shape[0] is the batch size
+                        clip[m] = data[m].reshape(data[m].shape[0],args.test.num_clips, -1, 16, 17)
+                        clip[m] = clip[m][:, i_c].permute(0,2,3,1).to(device)  
+                    else:               
+                        clip[m] = data[m][:, i_c].to(device)
 
                   output, _ = model(clip)
                   for m in modalities:
