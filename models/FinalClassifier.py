@@ -32,6 +32,7 @@ class LSTM(nn.Module):
         super(LSTM, self).__init__()
         self.num_layers = num_layers
         self.hidden_size = hidden_size
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         # -> input x needs to have this shape: (batch_size, seq, input_size)
         self.lstm = nn.LSTM(dim_input, hidden_size, num_layers, batch_first=True, dtype=torch.float32)
@@ -39,7 +40,7 @@ class LSTM(nn.Module):
 
     def forward(self, x):
         # Set initial hidden states (and cell states for LSTM)
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        device = self.device
 
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float32).to(device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float32).to(device)
@@ -69,16 +70,38 @@ class Transformer(nn.Module):
             nn.TransformerEncoderLayer(hidden_size, num_heads, dim_feedforward=hidden_size, dropout=dropout),
             num_layers
         )
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.fc = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):
         x = self.embedding(x)
         x = x.unsqueeze(0)  # Add a batch dimension
         x = self.transformer(x)
-        #x = x.squeeze(0)  # Remove the batch dimension
         x = x.mean(dim=0)  # Average pooling over the sequence length
         x = self.fc(x)
+
         return x, {}
+    
+    def get_attention(self,x):
+      x = self.embedding(x)
+      x = x.unsqueeze(0)
+      transformer_output = self.transformer(x)       
+      x = self.fc(x)
+        
+      attention_weights = []
+      for layer in self.transformer.layers:
+          batch_size, seq_len, hidden_size = transformer_output.shape
+          src_key_padding_mask = torch.zeros((seq_len,batch_size), device=x.device).bool()  # Use the same device as x
+          query = transformer_output
+          key = transformer_output
+          value = transformer_output
+          attention_output = layer.self_attn(query, key, value, key_padding_mask=src_key_padding_mask)
+          attention_scores = attention_output[0]  # Get attention scores directly
+          attention_weights.append(attention_scores)
+      return attention_weights
+    
+    
+
 
 
 class CNN(nn.Module):

@@ -58,6 +58,8 @@ class ActionRecognition(tasks.Task, ABC):
                                                 weight_decay=model_args[m].weight_decay,
                                                 momentum=model_args[m].sgd_momentum)
 
+
+
 #called in the following way in training (train_classifier.py):
 #logits, _ = action_classifier.forward(data)
     def forward(self, data: Dict[str, torch.Tensor], **kwargs) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
@@ -75,7 +77,10 @@ class ActionRecognition(tasks.Task, ABC):
         """
         logits = {}
         features = {}
+
+        
         for i_m, m in enumerate(self.modalities):
+            
        
             logits[m], feat = self.task_models[m](x=data[m], **kwargs)
             
@@ -86,6 +91,11 @@ class ActionRecognition(tasks.Task, ABC):
                 features[k][m] = feat[k]
 
         return logits, features
+
+    def get_attention(self, data: Dict[str, torch.Tensor], **kwargs):
+      for m in (self.modalities):
+        attention = self.task_models[m](x=data[m], **kwargs)
+        return attention
 
     def compute_loss(self, logits: Dict[str, torch.Tensor], label: torch.Tensor, loss_weight: float=1.0):
         """Fuse the logits from different modalities and compute the classification loss.
