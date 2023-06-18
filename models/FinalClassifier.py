@@ -102,9 +102,9 @@ class CNN(nn.Module):
         )
         self.fully_connected = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(hidden_units*48,out_features=100) 
+            nn.Linear(hidden_units*48,out_features=50) 
         )
-        self.logits =  nn.Linear(100,out_features=ouput_shape)
+        self.logits =  nn.Linear(50,out_features=ouput_shape)
     
     def forward(self, x):
         x = self.conv_block1(x)
