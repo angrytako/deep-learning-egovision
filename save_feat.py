@@ -96,8 +96,10 @@ def save_feat(model, loader, device, it, num_classes):
             label = label.to(device)
 
             for m in modalities:
-
-                if len(data[m].shape) == 4: 
+                if m == "EMG_SPEC":
+                    data[m] = data[m].reshape(data[m].shape[0],args.train.num_clips, -1, 16, 17)
+                    data[m] = data[m][:, clip].permute(0,2,3,1).to(device)
+                elif len(data[m].shape) == 4: 
                     batch, _, height, width = data[m].shape
                     data[m] = data[m].reshape(batch, args.test.num_clips,
                                             args.test.num_frames_per_clip[m], -1, height, width)
@@ -105,7 +107,7 @@ def save_feat(model, loader, device, it, num_classes):
                 #EMG: batch_len, full_arr_len (if no sampling), 2 (vector of single activations)
                 elif len(data[m].shape) == 3: 
                      batch, arr_len, vec_len = data[m].shape
-
+                    
                      data[m] = data[m][:, 0 : ((arr_len//args.test.num_clips)*args.test.num_clips),:].reshape(batch, args.test.num_clips,
                                             -1, vec_len)
                      data[m] = data[m].permute(1, 0, 3, 2)
