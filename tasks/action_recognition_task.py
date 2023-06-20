@@ -76,7 +76,10 @@ class ActionRecognition(tasks.Task, ABC):
         """
         logits = {}
         features = {}
+
+        
         for i_m, m in enumerate(self.modalities):
+            
        
             logits[m], feat = self.task_models[m](x=data[m], **kwargs)
             
@@ -87,6 +90,11 @@ class ActionRecognition(tasks.Task, ABC):
                 features[k][m] = feat[k]
 
         return logits, features
+
+    def get_attention(self, data: Dict[str, torch.Tensor], **kwargs):
+      for m in (self.modalities):
+        attention = self.task_models[m](x=data[m], **kwargs)
+        return attention
 
     def compute_loss(self, logits: Dict[str, torch.Tensor], label: torch.Tensor, loss_weight: float=1.0):
         """Fuse the logits from different modalities and compute the classification loss.

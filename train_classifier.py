@@ -206,11 +206,18 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
                     data[m] = data[m][:, clip].permute(0,2,3,1).to(device)  
                 else:               
                     data[m] = source_data[m][:, clip].to(device)
-              
-              logits, _ = action_classifier.forward(data)
-              action_classifier.compute_loss(logits, source_label, loss_weight=1)
-              action_classifier.backward(retain_graph=False)
-              action_classifier.compute_accuracy(logits, source_label)
+
+                logits, _= action_classifier.forward(data)
+                if args.models['RGB'].model == 'Transformer':
+                  
+
+                  attention = action_classifier.get_attention(data)
+                  logger.info(attention)
+                
+                action_classifier.compute_loss(logits, source_label, loss_weight=1)
+                action_classifier.backward(retain_graph=False)
+                action_classifier.compute_accuracy(logits, source_label)
+
 
         # update weights and zero gradients if total_batch samples are passed
         if gradient_accumulation_step:
