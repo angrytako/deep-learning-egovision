@@ -81,7 +81,7 @@ class Task(torch.nn.Module, metaclass=ABCMeta):
         for modality, model in self.task_models.items():
             self.task_models[modality] = torch.nn.DataParallel(model).to(device)
 
-    def __restore_checkpoint(self, m: str, path: str):
+    def restore_checkpoint(self, m: str, path: str):
         """Restore a checkpoint from path.
 
         Parameters
@@ -156,7 +156,7 @@ class Task(torch.nn.Module, metaclass=ABCMeta):
             )[0].name
             model_path = os.path.join(str(last_dir), model)
 
-            self.__restore_checkpoint(m, model_path)
+            self.restore_checkpoint(m, model_path)
 
     def load_last_model(self, path: str):
         """Load the last model from a specific path.

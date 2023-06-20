@@ -16,9 +16,6 @@ class Classifier(nn.Module):
             nn.ReLU(),
             nn.Linear(32, num_classes)
         )
-        """
-        [TODO]: the classifier should be implemented by the students and different variations of it can be tested
-        in order to understand which is the most performing one """
 #should return logits and features
 #features is ignored for now
     def forward(self, x):
@@ -85,6 +82,7 @@ class CNN(nn.Module):
         #input_shape = nr. of channels; for spectograms is 16
     def __init__(self, input_shape, hidden_units, ouput_shape) -> None:
         super().__init__()
+        self.feat_dim = 50
         self.conv_block1 = nn.Sequential(
             nn.Conv2d(in_channels=input_shape, out_channels=hidden_units, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
@@ -102,9 +100,9 @@ class CNN(nn.Module):
         )
         self.fully_connected = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(hidden_units*48,out_features=50) 
+            nn.Linear(hidden_units*48,out_features=self.feat_dim) 
         )
-        self.logits =  nn.Linear(50,out_features=ouput_shape)
+        self.logits =  nn.Linear(self.feat_dim,out_features=ouput_shape)
     
     def forward(self, x):
         x = self.conv_block1(x)

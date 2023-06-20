@@ -47,13 +47,18 @@ def main():
     #part for data augmentation; needs to be specified in the implementation of the actual model class!
     for m in modalities:
         logger.info('{} Net\tModality: {}'.format(args.models[m].model, m))
-        models[m] = getattr(model_list, args.models[m].model)(num_classes, m, args.models[m], **args.models[m].kwargs)
+        if args.models[m].model == 'CNN':
+            models[m] = getattr(model_list, args.models[m].model)(args.models[m].n_channels,args.models[m].hidden_size,num_classes)
+        else:    
+            models[m] = getattr(model_list, args.models[m].model)(num_classes, m, args.models[m], **args.models[m].kwargs)
         train_augmentations[m], test_augmentations[m] = models[m].get_augmentation(m)
 
     action_classifier = tasks.ActionRecognition("action-classifier", models, 1,
                                                 args.total_batch, args.models_dir, num_classes,
                                                 args.test.num_clips, args.models, args=args)
     action_classifier.load_on_gpu(device)
+    if m.find("EMG_SPEC") != -1:
+        action_classifier.restore_checkpoint("EMG_SPEC",args.models["EMG_SPEC"].path_to_checkpoint)
     if args.resume_from is not None:
         action_classifier.load_last_model(args.resume_from)
 
@@ -98,7 +103,7 @@ def save_feat(model, loader, device, it, num_classes):
             for m in modalities:
                 if m == "EMG_SPEC":
                     data[m] = data[m].reshape(data[m].shape[0],args.train.num_clips, -1, 16, 17)
-                    data[m] = data[m][:, clip].permute(0,2,3,1).to(device)
+                    data[m] = data[m].permute(1,0,3,4,2)
                 elif len(data[m].shape) == 4: 
                     batch, _, height, width = data[m].shape
                     data[m] = data[m].reshape(batch, args.test.num_clips,

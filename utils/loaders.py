@@ -57,7 +57,8 @@ class EpicKitchensDataset(data.Dataset, ABC):
             self.model_features = None
             for m in self.modalities:
                 # load features for each modality
-                model_features = pd.DataFrame(pd.read_pickle(os.path.join("saved_features",
+                # changed the directory 
+                model_features = pd.DataFrame(pd.read_pickle(os.path.join(self.dataset_conf[m].data_path,
                                                                           self.dataset_conf[m].features_name + "_" +
                                                                            pickle_name))['features'])[["uid", "features_" + m]]
                 if self.model_features is None:
@@ -177,7 +178,7 @@ class EpicKitchensDataset(data.Dataset, ABC):
             images.extend(frame)
         # finally, all the transformations are applied
         process_data = images
-        if self.transform is not None and [modality] is not None:
+        if self.transform is not None and self.transform[modality] is not None:
             process_data = self.transform[modality](images)
         else: process_data = np.array(images)
         return process_data, record.label

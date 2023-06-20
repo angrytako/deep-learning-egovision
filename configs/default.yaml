@@ -22,9 +22,11 @@ train: #THE SPECIFIC VALUES OF THE LEARNING IS IN THE MODELS SECTION!!!
     RGB: False
     EMG: Null
     EMG_SPEC: Null
+    MULTIMODAL: Null
   num_frames_per_clip:
     RGB: 15
     EMG_SPEC: Null
+    MULTIMODAL: Null
 
 test:
   num_clips: 5 # number of clips in testing
@@ -32,9 +34,11 @@ test:
     RGB: False
     EMG: Null
     EMG_SPEC: Null
+    MULTIMODAL: Null
   num_frames_per_clip:
     RGB: 15
     EMG_SPEC: Null
+    MULTIMODAL: Null
 
 dataset:
   annotations_path: train_val # path for the annotations data
@@ -54,7 +58,10 @@ dataset:
   EMG_SPEC:
     data_path: ./actionNet/ # path to RGB data
     tmpl: null # format of RGB filenames
-    features_name: yet_to_be_named
+  MULTIMODAL:
+    data_path: ./saved_features/  # path to RGB data
+    tmpl: null # format of RGB filenames
+    features_name: RGB_EMG_SPEC_FEAT
   Event: # not neeeded for the project
     rgb4e: 6
 
@@ -72,6 +79,20 @@ models:
     weight_decay: 1e-7
     #added to give information abount the model dynamically
     n_features: 1024
+    hidden_size: 128 
+    num_layers: 3
+  MULTIMODAL:
+    model: Classifier
+    #model: Classifier # Name of the ACTUAL class used in training/testing or saving checkpoints. It needs to be imported in __init__.py
+    #model: LSTM
+    normalize: False
+    kwargs: {}
+    lr_steps: 3000
+    lr: 0.01
+    sgd_momentum: 0.9
+    weight_decay: 1e-7
+    #added to give information abount the model dynamically
+    n_features: 1074
     hidden_size: 128 
     num_layers: 3
   EMG:

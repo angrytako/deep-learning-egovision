@@ -57,7 +57,8 @@ class ActionRecognition(tasks.Task, ABC):
             self.optimizer[m] = torch.optim.SGD(optim_params[m], model_args[m].lr,
                                                 weight_decay=model_args[m].weight_decay,
                                                 momentum=model_args[m].sgd_momentum)
-
+    def restore_checkpoint(self, m: str, path: str):
+        super().restore_checkpoint(m, path)
 #called in the following way in training (train_classifier.py):
 #logits, _ = action_classifier.forward(data)
     def forward(self, data: Dict[str, torch.Tensor], **kwargs) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
