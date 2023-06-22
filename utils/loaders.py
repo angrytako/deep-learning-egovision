@@ -107,11 +107,21 @@ class EpicKitchensDataset(data.Dataset, ABC):
         
         frames_per_part = (num_frames_per_clip-1)//2
         frames = np.array([],dtype=np.int16)
-        video = np.int16(np.linspace(0, tot_num_frames-1, tot_num_frames))
-        centrals = np.random.choice(video[frames_per_part*stride+1:-frames_per_part*stride-1], num_clips,replace= False)
-        for i in centrals:
-            frames = np.append(frames,np.concatenate([video[i-stride*frames_per_part:i:stride],[i],video[i+stride:i+stride+stride*frames_per_part:stride]]))
-        return frames
+        try:
+            video = np.int16(np.linspace(0, tot_num_frames-1, tot_num_frames))
+            centrals = np.random.choice(video[frames_per_part*stride+1:-frames_per_part*stride-1], num_clips,replace= False)
+          
+            for i in centrals:
+                frames = np.append(frames,np.concatenate([video[i-stride*frames_per_part:i:stride],[i],video[i+stride:i+stride+stride*frames_per_part:stride]]))
+            return frames
+       
+        except:
+          intervals = np.int16(np.linspace(0, tot_num_frames, num_clips+1))
+          for i, first in enumerate(intervals[0:-1]):
+            last = intervals[i+1]
+            frames = np.hstack([frames,np.int16(np.linspace(first, last-1, num_frames_per_clip))])
+          return frames
+         
 
     def _get_val_indices(self, record:EpicVideoRecord, modality):
         ##################################################################

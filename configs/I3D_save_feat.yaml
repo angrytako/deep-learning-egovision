@@ -8,7 +8,7 @@ compute_accuracy: False
 save:
   num_clips: 5
   dense_sampling:
-    RGB: False
+    RGB: True
     EMG: Null
   num_frames_per_clip:
     RGB: 15
