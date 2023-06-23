@@ -208,7 +208,7 @@ def train(action_classifier, train_loader, val_loader, device, num_classes):
                     data[m] = source_data[m][:, clip].to(device)
 
                 logits, _= action_classifier.forward(data)
-                if args.models['RGB'].model == 'Transformer':
+                if args.models[m].model == 'Transformer':
                   
 
                   attention = action_classifier.get_attention(data)
