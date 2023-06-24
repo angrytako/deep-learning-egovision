@@ -2,6 +2,9 @@ import torch
 from torch import nn
 from utils.logger import logger
 from collections import OrderedDict
+import math
+from torch.nn import TransformerEncoderLayer
+from torch.nn import TransformerEncoder
 
 #this is the initialization line in the original code:
 #models[m] = getattr(model_list, args.models[m].model)()
@@ -59,43 +62,70 @@ class LSTM(nn.Module):
         # out: (n, 8)
         return out, {}
 
-class Transformer(nn.Module):
-    def __init__(self, input_dim, num_classes, hidden_size, num_layers, num_heads=4,  dropout=0.2):
-        super(Transformer, self).__init__()
-        self.embedding = nn.Linear(input_dim, hidden_size)
-        self.transformer = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(hidden_size, num_heads, dim_feedforward=hidden_size, dropout=dropout),
-            num_layers
-        )
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.fc = nn.Linear(hidden_size, num_classes)
+class PositionalEncoding(nn.Module):
+# given n vectors( num_clips, because we see out video as a sentence made of 5 words ) each of one made of 1024 entries ( aka dim_input) we create a positional encoding for them
+# so our input_dim = 1024 and maxlen = numclips +1
+
+    def __init__(self, input_dim: int, dropout: float = 0.1, max_len: int = 5 +1 ):
+        super().__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        position = torch.arange(max_len).unsqueeze(1) # simply it creates a vector [0,1,2...,max_len]'  (max_len,1)
+        div_term = torch.exp(torch.arange(0, input_dim, 2) * (-math.log(10000.0) / input_dim))  # takes only the even indexes  and creates the div term
+        pe = torch.zeros(max_len, 1, input_dim)  # matrix of shape (numclips+1, 1, 1024)
+		# it is now creating the matrix for to sum with the embeddings to create the positional encoding embedding vectors
+        pe[:, 0, 0::2] = torch.sin(position * div_term)
+        pe[:, 0, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
 
     def forward(self, x):
-        x = self.embedding(x)
-        x = x.unsqueeze(0)  # Add a batch dimension
-        x = self.transformer(x)
-        x = x.mean(dim=0)  # Average pooling over the sequence length
-        x = self.fc(x)
-
-        return x, {}
-    
-    def get_attention(self,x):
-      x = self.embedding(x)
-      x = x.unsqueeze(0)
-      transformer_output = self.transformer(x)       
-      x = self.fc(x)
+        """
+        Arguments:
+            x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
+        """
+		    # because our input has different order we change it before summing 
         
-      attention_weights = []
-      for layer in self.transformer.layers:
-          batch_size, seq_len, hidden_size = transformer_output.shape
-          src_key_padding_mask = torch.zeros((seq_len,batch_size), device=x.device).bool()  # Use the same device as x
-          query = transformer_output
-          key = transformer_output
-          value = transformer_output
-          attention_output = layer.self_attn(query, key, value, key_padding_mask=src_key_padding_mask)
-          attention_scores = attention_output[0]  # Get attention scores directly
-          attention_weights.append(attention_scores)
-      return attention_weights
+        x = x + self.pe[:x.size(0)]  # it is enoght dimension 1 because the vector is replicated till it matches 32
+        return self.dropout(x)
+
+class Transformer(nn.Module):
+
+    def __init__(self, input_dim: int,num_classes, hidden_size: int,
+                 num_layers: int,nhead=4, num_clips=5, dropout: float = 0.5):
+		
+		# hidden_size = dimension of feedforward 
+		# nhead = number of heads in the multi attention layer
+        super().__init__()
+        self.model_type = 'Transformer'
+        self.pos_encoder = PositionalEncoding(input_dim, dropout)
+        encoder_layers = TransformerEncoderLayer(input_dim, nhead, hidden_size, dropout)
+        self.transformer_encoder = TransformerEncoder(encoder_layers, num_layers)
+        self.input_dim = input_dim
+        self.num_classes = num_classes
+        self.linear = nn.Linear(input_dim, num_classes)
+
+        
+
+
+    def forward(self, x, x_mask= None):
+        """
+        Arguments:
+            src: Tensor, shape ``[seq_len, batch_size]``  --> seq_len=num_clips
+            src_mask: Tensor, shape ``[seq_len, seq_len]``
+
+        Returns:
+            output Tensor of shape ``[seq_len, batch_size, ntoken]``
+        """
+        x_perm = torch.permute(x,(1,0,2))
+        x_perm = self.pos_encoder(x_perm)
+        output = self.transformer_encoder(x_perm, x_mask)
+        output = torch.permute(output,(1,0,2))
+        output = self.linear(output[:,-1,:])
+		    
+        return output, {}
+
+
+
     
     
 
