@@ -105,14 +105,18 @@ class EpicKitchensDataset(data.Dataset, ABC):
     
     def _get_dense_sample_(self, num_clips, num_frames_per_clip, tot_num_frames, stride=2):
         
-        frames_per_part = (num_frames_per_clip-1)//2
+        frames_per_part = (num_frames_per_clip-1)//2 if num_frames_per_clip % 2 == 1 else (num_frames_per_clip)//2
         frames = np.array([],dtype=np.int16)
         try:
             video = np.int16(np.linspace(0, tot_num_frames-1, tot_num_frames))
             centrals = np.random.choice(video[frames_per_part*stride+1:-frames_per_part*stride-1], num_clips,replace= False)
           
             for i in centrals:
-                frames = np.append(frames,np.concatenate([video[i-stride*frames_per_part:i:stride],[i],video[i+stride:i+stride+stride*frames_per_part:stride]]))
+                if num_frames_per_clip % 2 == 1:
+                    frames = np.append(frames,np.concatenate([video[i-stride*frames_per_part:i:stride],[i],video[i+stride:i+stride+stride*frames_per_part:stride]]))
+                else: 
+                    frames = np.append(frames,np.concatenate([video[i-stride*frames_per_part:i:stride],[i],video[i+stride:i+stride+stride*(frames_per_part-1):stride]]))
+            logger.info(frames.shape)
             return frames
        
         except:
